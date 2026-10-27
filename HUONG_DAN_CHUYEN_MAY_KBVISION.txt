@@ -1,0 +1,157 @@
+HUONG DAN GIU SOURCE VA CHUYEN MAY - KBVISION MONITOR
+=====================================================
+
+1. CAC FILE CAN GIU
+
+Trong thu muc kbvision_monitor, giu cac file sau:
+
+BAT BUOC - SOURCE VA CAU HINH
+- monitor.py                 : Chuong trinh kiem tra NVR/camera/HDD
+- send_teams_report.py       : Gui tom tat bao cao len Microsoft Teams
+- run_daily_retention.bat    : Chay monitor, gui Teams va don file cu
+- config.json                : Cau hinh monitor
+- device.xml                 : Danh sach dau ghi xuat tu KBiVMS
+- credential_store.py        : Xu ly kho mat khau
+- setup_password.py          : Thiet lap kho mat khau tren may/tai khoan moi
+- README_VI.txt              : Ghi chu su dung
+- .gitignore                 : Quy tac bo qua file neu dung Git
+
+NHAY CAM - PHAI BAO QUAN AN TOAN
+- nvr_password.dpapi         : Kho mat khau NVR duoc bao ve boi Windows DPAPI.
+                                Khong xem file nay la co the copy sang may/tai khoan
+                                khac roi dung ngay. Can thiet lap lai tren may/tai khoan dich.
+- URL webhook Teams           : Khong ghi cong khai vao file huong dan, email hoac Teams.
+
+THU MUC DU LIEU
+- reports\                  : CSV/HTML tao ra. Co the giu de xem lich su hoac khong copy.
+- logs\                     : Log chay. Co the giu de dieu tra loi hoac khong copy.
+- __pycache__\               : File cache Python; KHONG bat buoc, co the bo qua/xoa.
+- Task Scheduler XML         : File export task, neu co; can kiem tra va sua sau khi import.
+
+2. KHI CHUYEN SANG MAY WINDOWS MOI
+
+Buoc 1 - Sao luu source
+- Sao chep ca thu muc kbvision_monitor.
+- Khong chi sao chep rieng monitor.py.
+- Giua lai ban source cu cho den khi may moi chay on dinh.
+- Chuyen file va kho mat khau qua phuong thuc duoc cong ty phe duyet.
+
+Buoc 2 - Cai Python
+- Cai Python 3.12 64-bit (hoac phien ban da duoc kiem thu voi source).
+- Kiem tra trong PowerShell:
+    python --version
+    python -c "import sys; print(sys.executable)"
+- Ghi lai duong dan Python. run_daily_retention.bat hien co duong dan Python
+  cu the cua may hien tai, vi vay can sua neu may moi dung duong dan khac.
+
+Buoc 3 - Copy source vao thu muc on dinh
+Vi du:
+    C:\KBVision\kbvision_monitor
+
+Sao chep cac file source/cau hinh vao thu muc nay.
+Khong can copy __pycache__. Thu muc reports/logs co the tao moi; copy neu can lich su.
+
+Buoc 4 - Ket noi VPN va kiem tra mang
+- Dam bao may moi truy cap duoc mang noi bo cua cac cua hang.
+- Kiem tra thu mot dau ghi, vi du:
+    Test-NetConnection 10.147.109.101 -Port 80
+- TCP thanh cong chi xac nhan ket noi cong, chua chung minh API dang nhap/camera/HDD hoat dong.
+
+Buoc 5 - Thiet lap lai kho mat khau DPAPI
+- Dang nhap bang dung tai khoan Windows se chay monitor.
+- Mo PowerShell tai thu muc source.
+- Chay:
+    python .\setup_password.py
+- Lam theo huong dan cua script de tao kho mat khau tren may/tai khoan dich.
+- Khong mac dinh file nvr_password.dpapi cu se giai ma duoc tren may moi.
+- Neu khong ro script dang yeu cau gi, dung lai va xem README/hoi IT; khong tu sua dinh dang DPAPI.
+
+Buoc 6 - Thiet lap webhook Teams
+- Dat bien moi truong KBV_TEAMS_WEBHOOK cho dung tai khoan Windows chay monitor.
+- Mo PowerShell bang tai khoan do va chay:
+    [Environment]::SetEnvironmentVariable("KBV_TEAMS_WEBHOOK", "DAN_WEBHOOK_URL_NOI_BO", "User")
+- Thay DAN_WEBHOOK_URL_NOI_BO bang URL webhook cua cong ty.
+- Khong in URL ra man hinh/log, khong gui URL vao chat/email.
+- Dong va mo lai PowerShell sau khi dat bien de nap bien moi.
+- Kiem tra chi trang thai, khong in gia tri:
+    if ($env:KBV_TEAMS_WEBHOOK) { "Webhook is set" } else { "Webhook is missing" }
+
+Buoc 7 - Cap nhat duong dan Python trong BAT
+- Mo run_daily_retention.bat bang Notepad.
+- Tim hai dong goi python.exe.
+- Sua duong dan thanh ket qua sys.executable tu may moi, them tham so -X utf8,
+  giu nguyen phan con lai cua lenh.
+- Luu file.
+
+Buoc 8 - Chay thu thu cong truoc khi tao task
+- Mo PowerShell tai thu muc source.
+- Chay truc tiep file BAT:
+    .\run_daily_retention.bat
+- KHONG dung: py .\run_daily_retention.bat
+- Kiem tra:
+  1. CSV moi duoc tao trong reports.
+  2. Teams nhan duoc tin nhan moi.
+  3. logs\scheduled_YYYYMMDD.log co dong BAT END.
+  4. So lieu trong report hop ly.
+- Neu monitor loi DPAPI, dung lai va kiem tra buoc 5.
+- Neu Teams loi, kiem tra bien webhook va log; khong dua URL vao log.
+
+3. IMPORT TASK SCHEDULER TU MAY CU
+
+Tren may cu:
+1. Mo Win+R, nhap taskschd.msc.
+2. Task Scheduler Library > KBVision Daily Monitor.
+3. Chon Export... va luu thanh KBVision_Daily_Monitor.xml tai noi luu tru duoc phe duyet.
+
+Tren may moi:
+1. Mo Task Scheduler.
+2. Chon Import Task... va chon file XML.
+3. Mo Properties cua task sau khi import.
+4. General:
+   - Chon dung tai khoan Windows tren may moi.
+   - Giai doan dau nen dung Run only when user is logged on de kiem thu DPAPI
+     va bien moi truong; may phai bat va tai khoan phai dang nhap luc 07:00.
+   - Khong chon Do not store password neu can truy cap tai nguyen ngoai may.
+5. Triggers:
+   - Kiem tra Daily, 07:00 AM, Enabled.
+6. Actions:
+   - Program/script / action phai tro dung den:
+       C:\KBVISION\kbvision_monitor\run_daily_retention.bat
+     (dung duong dan thuc te tren may moi).
+   - Start in (optional) nen la thu muc chua monitor.py.
+7. Conditions:
+   - Dam bao dieu kien nguon dien/ngu khong ngan task chay.
+   - VPN phai san sang luc 07:00.
+8. Settings:
+   - Cho phep chay theo yeu cau.
+   - Neu task dang chay, khong khoi tao instance thu hai.
+9. Save, sau do right-click task > Run de kiem thu.
+
+Luu y: Import task XML khong tu dong chuyen Python, VPN, webhook, kho DPAPI,
+hoac thong tin dang nhap tai khoan Windows. Luon kiem tra lai Actions va tai khoan.
+
+4. CHINH SACH LUU TRU HIEN TAI
+- CSV: giu 30 ngay.
+- HTML: giu 7 ngay.
+- Log scheduled_*.log: giu 7 ngay.
+- device.xml, config.json, source va nvr_password.dpapi khong nam trong quy tac don report.
+- Khong xoa thu muc source khi don report.
+- Teams gui tin nhan tom tat moi ngay, ke ca ngay khong co canh bao.
+- CSV hien luu tren may Windows, chua dinh kem truc tiep vao Teams.
+
+5. CHECKLIST TRUOC KHI GO-LIVE TREN MAY MOI
+[ ] Python chay duoc va da sua duong dan trong BAT.
+[ ] Source va device.xml duoc copy day du.
+[ ] Kho mat khau da thiet lap/kiem tra tren tai khoan dich.
+[ ] VPN truy cap duoc mang cua hang.
+[ ] Bien KBV_TEAMS_WEBHOOK duoc dat cho tai khoan chay task.
+[ ] Chay BAT thu cong thanh cong.
+[ ] CSV moi duoc tao va Teams nhan tin.
+[ ] Task Scheduler dung tai khoan, duong dan, trigger 07:00.
+[ ] Da test Run trong Task Scheduler va xem Last Run Result/log.
+[ ] Giu may cu va ban backup den khi may moi chay on dinh.
+
+GHI CHU
+- Khong dua URL webhook, mat khau NVR, hoac noi dung kho DPAPI vao tai lieu chia se.
+- Neu may moi dung tai khoan Windows khac, hay kiem tra lai quyen thu muc va bien moi truong.
+- Tai lieu nay mo ta source hien tai; neu source thay doi, cap nhat huong dan tuong ung.

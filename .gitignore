@@ -1,0 +1,8 @@
+nvr_password.dpapi
+device.xml
+devices.xml
+reports/
+__pycache__/
+logs/
+.venv/
+*.log

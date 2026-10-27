@@ -1,0 +1,21 @@
+{
+  "timeout_seconds": 8,
+  "delay_between_devices_seconds": 0.25,
+  "email": {
+    "enabled": false,
+    "server": "smtp.office365.com",
+    "port": 587,
+    "sender": "dfvnhelp@guardian.com.vn",
+    "recipients": [
+      "tmhieu@guardian.com.vn"
+    ],
+    "password_env": "KBV_SMTP_PASSWORD",
+    "subject_prefix": "KBVision Camera Report"
+  },
+  "device_source": "xml",
+  "http_scheme": "http",
+  "http_port": 80,
+  "default_username": "admin",
+  "password_store_file": "nvr_password.dpapi",
+  "test_device_names": []
+}
